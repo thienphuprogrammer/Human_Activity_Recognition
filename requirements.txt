@@ -1,0 +1,7 @@
+tensorflow==2.16.1
+mediapipe==latest
+moviepy==latest
+opencv-python==latest
+numpy==latest
+pandas==latest
+

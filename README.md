@@ -1,9 +1,11 @@
 # Human_Activity_Recognition
+This project focuses on developing a Human Activity Recognition (HAR) system using machine learning and deep learning techniques. The goal is to classify and recognize human activities (e.g., walking, sitting, running) based on sensor data or multimedia inputs like images or videos. The system is built with modular components, making it flexible for experimentation, data processing, model training, and deployment.
 
-
+## Project Structure
+```bash
 project_name/
 │
-├── data/                          # All data-related directories and files
+├── data/                          # All data-related directories and files \n
 │   ├── raw/                       # Original, immutable data dump
 │   ├── processed/                 # Data transformed for modeling, such as TFRecords or HDF5
 │   ├── interim/                   # Temporary processed datasets, possibly smaller or for prototyping

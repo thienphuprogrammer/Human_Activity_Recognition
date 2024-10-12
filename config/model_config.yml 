@@ -1,0 +1,5 @@
+batch_size: 32
+epochs: 100
+learning_rate: 0.001
+input_shape: [100, 1]
+num_classes: 10

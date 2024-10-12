@@ -2,4 +2,7 @@
 .ipynb_checkpoints
 
 Dataset/
-model.h5
+data/raw/
+data/processed/
+
+results/models/*.h5

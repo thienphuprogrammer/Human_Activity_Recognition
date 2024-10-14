@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.model.architectures.lstm import LSTMPoseModel
+from src.model.lstm import LSTMPoseModel
 from src.data_pipeline.preprocessing.data_loader import load_data
 
 # Hyperparameters

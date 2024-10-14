@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from src.model.utils.pose_processing import process_pose
-from src.model.architectures.lstm import LSTMPoseModel
+from src.model.lstm import LSTMPoseModel
 
 
 def load_model(model_path):

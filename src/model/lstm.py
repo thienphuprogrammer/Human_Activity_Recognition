@@ -1,13 +1,12 @@
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
-import torch.nn.functional as F
 
 
-class LSTMPoseModel(nn.Module):
+class LSTM(nn.Module):
     def __init__(self, seq_len, input_dim, hidden_dim, num_layers, dropout,
-                 output_dim=1, batch_size=1, device='cpu'):
-        super(LSTMPoseModel, self).__init__()
+                 output_dim=1, batch_size=1, device='gpu'):
+        super(LSTM, self).__init__()
         self.seq_len = seq_len
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -16,7 +15,6 @@ class LSTMPoseModel(nn.Module):
         self.device = device
         self.num_layers = num_layers
         self.dropout = dropout
-
         self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, dropout=dropout, batch_first=True)
         self.fc = nn.Linear(hidden_dim, output_dim)
         self.hidden = self.init_hidden(batch_size, device)

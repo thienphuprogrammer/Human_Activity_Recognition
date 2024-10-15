@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.model.lstm import LSTMPoseModel
-from src.data_pipeline.preprocessing.data_loader import load_data
+from src.model.lstm import LSTM
+from src.data_pipeline.preprocessing.mediapipe_pose_extractor import load_data
 
 # Hyperparameters
 input_size = 10  # Adjust based on data
@@ -20,7 +20,7 @@ test_loader = load_data('data/test.csv', sequence_length, batch_size)
 
 # Initialize model
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = LSTMPoseModel(sequence_length, input_size, hidden_size, num_layers, 0.5, output_size, batch_size, device).to(device)
+model = LSTM(sequence_length, input_size, hidden_size, num_layers, 0.5, output_size, batch_size, device).to(device)
 criteria = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -42,6 +42,3 @@ for epoch in range(num_epochs):
         running_loss += loss.item()
 
     print(f'Epoch {epoch+1}/{num_epochs}, Loss: {running_loss/len(train_loader)}')
-
-
-

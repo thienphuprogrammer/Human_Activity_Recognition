@@ -3,30 +3,77 @@ from torch.autograd import Variable
 import torch.nn as nn
 
 
-class LSTM(nn.Module):
-    def __init__(self, seq_len, input_dim, hidden_dim, num_layers, dropout,
-                 output_dim=1, batch_size=1, device='gpu'):
-        super(LSTM, self).__init__()
-        self.seq_len = seq_len
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
-        self.batch_size = batch_size
-        self.device = device
-        self.num_layers = num_layers
-        self.dropout = dropout
-        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, dropout=dropout, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, output_dim)
-        self.hidden = self.init_hidden(batch_size, device)
+class  ResBlockMLP(nn.Module):
+    def __init__(self, input_size, output_size):
+        super(ResBlockMLP, self).__init__()
+        # Define the layers for the Residual Block
+        # Define layer normalization for input size
+        self.morm1 = nn.LayerNorm(input_size)
+        # First fully connected layer
+        self.fc1 = nn.Linear(input_size, input_size//2)
 
-    def init_hidden(self, batch_size, device):
-        return (torch.zeros(1, batch_size, self.hidden_dim).to(device),
-                torch.zeros(1, batch_size, self.hidden_dim).to(device))
+        # Layer normalization for input size//2
+        self.morm2 = nn.LayerNorm(input_size//2)
+        # Second fully connected layer
+        self.fc2 = nn.Linear(input_size//2, output_size)
+
+        # Final fully connected layer
+        self.fc3 = nn.Linear(input_size, output_size)
+
+        # Define the activation function
+        self.activation = nn.ELU()
 
     def forward(self, x):
-        lstm_out, _ = self.lstm(x, self.hidden)
-        out = self.fc(lstm_out[:, -1, :])
-        return out
+        out = self.activation(self.fc1(self.morm1(x)))
+        # Calculate the residual
+        skip = self.fc3(x)
 
-    def reset_hidden(self):
-        self.hidden = self.init_hidden(self.batch_size, self.device)
+        # Apply layer normalization, fully connected layer, and activation function
+        out = self.activation(self.fc2(self.morm2(out)))
+        out = self.fc2(out)
+        return out + skip
+
+
+class LSTM(nn.Module):
+    def __init__(self, output_size, patch_size, lstm_layers, hidden_size=1, number_block=1):
+        super(LSTM, self).__init__()
+
+        # Define the layers for the LSTM model
+        self.fc_in = nn.Linear(patch_size ** 2, hidden_size)
+
+        # Define the LSTM layer
+        self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size,
+                            num_layers=lstm_layers, batch_first=True)
+
+        # Define the Residual Blocks
+        blocks = [ResBlockMLP(hidden_size, hidden_size) for _ in range(number_block)]
+        self.blocks = nn.Sequential(*blocks)
+
+        # Define the output layer
+        self.fc_out = nn.Linear(hidden_size, output_size)
+
+        # Activation function
+        self.activation = nn.ELU()
+        self.patch_size = patch_size
+
+    def forward(self, input_data, hidden_in, mem_in):
+        bs, seq, col, row = input_data.size()
+
+        # Reshape the input data
+        input_data = input_data.view(bs, seq, -1)
+        # Apply the input fully connected layer
+        out = self.activation(self.fc_in(input_data))
+
+        # The LSTM layer
+        out, (hidden_out, mem_out) = self.lstm(out, (hidden_in, mem_in))
+
+        # Apply the Residual Blocks
+        out = self.blocks(out)
+
+        # Apply activation function
+        out = self.activation(out)
+
+        # Apply the output fully connected layer
+        out = self.fc_out(out)
+
+        return out, hidden_out, mem_out

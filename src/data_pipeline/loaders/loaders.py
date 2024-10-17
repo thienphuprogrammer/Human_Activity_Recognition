@@ -38,7 +38,7 @@ def load_har_dataset(dataset_path: str, resize_dataset_video_path: str = None,
             return X_test, y_test
 
     # Resize videos and save them
-    resize_videos_and_save(dataset_path, resize_dataset_video_path)
+    # resize_videos_and_save(dataset_path, resize_dataset_video_path)
     # Process videos and save data to csv
     X, y = process_videos(resize_dataset_video_path, dataset_csv_path)
 

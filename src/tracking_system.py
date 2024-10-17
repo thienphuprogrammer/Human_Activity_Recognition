@@ -11,7 +11,7 @@ class TrackingSystem:
         self.save_interval = save_interval
         self.count_frames = 0
         self.last_save_time = time.time()
-        self.core_model = CoreModel()
+        # self.core_model = CoreModel()
 
     def save_clip(self, clip):
         if len(self.clip_storage) >= self.max_stored_clips:
@@ -21,7 +21,7 @@ class TrackingSystem:
         self.count_frames += len(clip)
 
     def start_camera(self):
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture("./../data/raw/7752246914108791071.mp4")
         if not cap.isOpened():
             raise IOError("Cannot open webcam")
 
@@ -38,7 +38,7 @@ class TrackingSystem:
             current_clip.append(row_data)
 
             if time.time() - self.last_save_time >= self.save_interval:
-                self.core_model.predict(current_clip)
+                # self.core_model.predict(current_clip)
                 self.save_clip(current_clip)
                 current_clip = []
                 self.last_save_time = time.time()

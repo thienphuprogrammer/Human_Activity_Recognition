@@ -98,8 +98,13 @@ def process_videos(resize_dataset_video_path, destination_path):
                 # Check if the CSV file already exists
                 if os.path.exists(csv_path):
                     df = pd.read_csv(csv_path)
+                    # Drop the first and second columns
+                    if 'frame_num' and 'timestamp' in df.columns:
+                        df.drop(columns=['frame_num', 'timestamp'], inplace=True)
+
                     for column in df.columns:
                         df[column] = df[column].apply(lambda x: np.array(x[1:-1].split(',')).astype(np.float32))
+
                     X.append(df)
                     y.append(class_folder)
                     continue

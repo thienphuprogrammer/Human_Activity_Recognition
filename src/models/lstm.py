@@ -1,21 +1,21 @@
 import torch
-from torch.autograd import Variable
 import torch.nn as nn
+from torch.autograd import Variable
 
 
-class  ResBlockMLP(nn.Module):
+class ResBlockMLP(nn.Module):
     def __init__(self, input_size, output_size):
         super(ResBlockMLP, self).__init__()
         # Define the layers for the Residual Block
         # Define layer normalization for input size
         self.morm1 = nn.LayerNorm(input_size)
         # First fully connected layer
-        self.fc1 = nn.Linear(input_size, input_size//2)
+        self.fc1 = nn.Linear(input_size, input_size // 2)
 
         # Layer normalization for input size//2
-        self.morm2 = nn.LayerNorm(input_size//2)
+        self.morm2 = nn.LayerNorm(input_size // 2)
         # Second fully connected layer
-        self.fc2 = nn.Linear(input_size//2, output_size)
+        self.fc2 = nn.Linear(input_size // 2, output_size)
 
         # Final fully connected layer
         self.fc3 = nn.Linear(input_size, output_size)
@@ -59,8 +59,20 @@ class LSTM(nn.Module):
         self.activation = nn.ELU()
         self.patch_size = patch_size
 
-    def forward(self, input_data, hidden_in, mem_in):
+    def initialize_hidden(self, batch_size, hidden_size):
+        return (Variable(torch.zeros(self.lstm_layers, batch_size, hidden_size)),
+                Variable(torch.zeros(self.lstm_layers, batch_size, hidden_size)))
+
+    def initialize_memory(self, batch_size, hidden_size):
+        return (Variable(torch.zeros(self.lstm_layers, batch_size, hidden_size)),
+                Variable(torch.zeros(self.lstm_layers, batch_size, hidden_size)))
+
+    def forward(self, input_data):
         bs, seq, col, row = input_data.size()
+
+        # initialize the hidden state and memory buffer for the LSTM
+        hidden_in = self.initialize_hidden(bs, self.patch_size)
+        mem_in = self.initialize_memory(bs, self.patch_size)
 
         # Reshape the input data
         input_data = input_data.view(bs, seq, -1)

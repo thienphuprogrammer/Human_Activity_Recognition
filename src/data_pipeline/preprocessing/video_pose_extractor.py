@@ -3,7 +3,8 @@ import cv2
 import pandas as pd
 import os
 from tqdm import tqdm
-from src.data_pipeline.preprocessing.pose_detect import *
+from src.data_pipeline.preprocessing.pose_tracker import PoseTracker
+import numpy as np
 
 
 def resize_videos_and_save(dataset_path, output_path, target_size=(640, 640)):
@@ -41,29 +42,23 @@ def resize_videos_and_save(dataset_path, output_path, target_size=(640, 640)):
 
 
 def detect_pose_video(video_path,
-                      num_landmarks_pose=33,
-                      num_landmarks_left_hand=21,
-                      num_landmarks_right_hand=21):
+                      num_landmarks_pose=33):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
-    # Get video properties
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     # Initialize list to store results for each frame
     landmark_data = []
     frame_num = 0
+    pose_tracker = PoseTracker()
 
     while cap.isOpened():
         ret, frame = cap.read()
-
         if not ret:
             break
-        # Calculate timestamp for current frame
-        timestamp = frame_num / fps
+
         # Convert the image to RGB for MediaPipe
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # Process the image with MediaPipe Holistic models (without face detection)
-        row_data = get_pose_image(image)
+        row_data = pose_tracker.process_frame(image)
         # Append the row data to the list
         landmark_data.append(row_data)
         # Move to the next frame
@@ -71,15 +66,8 @@ def detect_pose_video(video_path,
 
     # Define the headers for the CSV file
     headers = []
-
-    # Add headers for each landmark (Pose, Face, Left Hand, Right Hand)
     pose_headers = [f"pose_{i}" for i in range(num_landmarks_pose)]
-    left_hand_headers = [f"left_hand_{i}" for i in range(num_landmarks_left_hand)]
-    right_hand_headers = [f"right_hand_{i}" for i in range(num_landmarks_right_hand)]
-
-    # Combine all headers
-    headers += pose_headers + left_hand_headers + right_hand_headers
-
+    headers += pose_headers
     df = pd.DataFrame(landmark_data, columns=headers)
     return df
 
@@ -105,7 +93,7 @@ def process_videos(resize_dataset_video_path, destination_path):
                 video_path = os.path.join(dir_path, filename)
 
                 csv_filename = os.path.splitext(filename)[0] + '.csv'  # Change extension to .csv
-                csv_path = os.path.join(destination_path, class_folder, csv_filename)  # Create the path for the CSV file
+                csv_path = os.path.join(destination_path, class_folder, csv_filename)
 
                 # Check if the CSV file already exists
                 if os.path.exists(csv_path):

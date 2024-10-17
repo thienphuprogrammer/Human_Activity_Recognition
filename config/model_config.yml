@@ -1,5 +1,20 @@
-batch_size: 32
-epochs: 100
-learning_rate: 0.001
-input_shape: [100, 1]
-num_classes: 10
+# Config file
+# ---
+
+# Data paths
+PATHS:
+  dataset_path: 'data/dataset.csv'
+  resize_dataset_video_path: 'data/dataset_resized'
+  output_csv_path: 'data/output.csv'
+
+# Model parameters
+HYPERPARAMETERS:
+  hidden_size: 128
+  lstm_layer: 35
+  patch_size: 225
+  num_classes: 6
+  num_epochs: 100
+  batch_size: 64
+  learning_rate: 0.001
+  number_block: 1
+  device: 'cuda'

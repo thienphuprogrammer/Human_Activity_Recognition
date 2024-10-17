@@ -1,12 +1,14 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from src.model.lstm import LSTM
-from tqdm.notebook import trange, tqdm
+from src.models.lstm import LSTM
+from tqdm.auto import trange, tqdm
 
 
-def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, hidden_size=256, learning_rate=0.001, momentum=0.9, epochs=100, device="cuda"):
-    # Initialize the optimizer with the model parameters
+def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35,
+                     hidden_size=256, learning_rate=0.001, momentum=0.9, epochs=100, device="cuda"):
+
+    # Initialize the optimizer with the models parameters
     optimizer = optim.Adam(lstm_model.parameters(), lr=learning_rate, betas=(momentum, 0.999))
 
     # Define the loss function
@@ -24,7 +26,7 @@ def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, 
 
     print(f"Number of parameters in the model: {num_models_params}")
 
-    # Train the model
+    # Train the models
     train_acc = 0
     val_acc = 0
 
@@ -34,7 +36,7 @@ def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, 
         # Update the progress bar description with the current epoch
         pbar.set_description(f"Accuracy: Train {train_acc:.2f}%, Validation {val_acc:.2f}%")
 
-        # Set the model to training mode
+        # Set the models to training mode
         lstm_model.train()
         correct = 0
 
@@ -47,7 +49,7 @@ def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, 
             hidden = torch.zeros(lstm_layer, data.shape[0], hidden_size, device=device)
             memory = torch.zeros(lstm_layer, data.shape[0], hidden_size, device=device)
 
-            # Forward pass through the model
+            # Forward pass through the models
             data_pred, hidden, memory = lstm_model(data, hidden, memory)
 
             # Select the last output from the last time step for calculating the loss
@@ -69,7 +71,7 @@ def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, 
         train_acc = (correct / len(train_loader)).item()
         training_loss_logger.append(train_acc)
 
-        # Set the model to evaluation mode
+        # Set the models to evaluation mode
         lstm_model.eval()
         correct = 0
 
@@ -84,7 +86,7 @@ def train_model_lstm(lstm_model: LSTM, train_loader, val_loader, lstm_layer=35, 
                 hidden = torch.zeros(lstm_layer, data.shape[0], hidden_size, device=device)
                 memory = torch.zeros(lstm_layer, data.shape[0], hidden_size, device=device)
 
-                # Forward pass through the model
+                # Forward pass through the models
                 data_pred, hidden, memory = lstm_model(data, hidden, memory)
 
                 # Select the last output from the last time step for calculating the loss

@@ -17,16 +17,16 @@ def get_pose_image(image,
                    num_landmarks_pose=33,
                    num_landmarks_left_hand=21,
                    num_landmarks_right_hand=21) -> dict:
-    # Initialize MediaPipe Holistic model and OpenCV
+    # Initialize MediaPipe Holistic models and OpenCV
     mp_holistic = mp.solutions.holistic
+    row_data = {}
 
     with mp_holistic.Holistic(static_image_mode=False, model_complexity=1,
                               enable_segmentation=False, refine_face_landmarks=False) as holistic:
         results = holistic.process(image)
 
-        row_data = {}
         row_data.update(extract_and_zip_landmarks(results.pose_landmarks, num_landmarks_pose, "pose"))
         row_data.update(extract_and_zip_landmarks(results.left_hand_landmarks, num_landmarks_left_hand, "left_hand"))
         row_data.update(extract_and_zip_landmarks(results.right_hand_landmarks, num_landmarks_right_hand, "right_hand"))
 
-        return row_data
+    return row_data

@@ -24,13 +24,15 @@ class  ResBlockMLP(nn.Module):
         self.activation = nn.ELU()
 
     def forward(self, x):
-        out = self.activation(self.fc1(self.morm1(x)))
+        out = self.activation(self.morm1(x))
         # Calculate the residual
         skip = self.fc3(x)
 
         # Apply layer normalization, fully connected layer, and activation function
-        out = self.activation(self.fc2(self.morm2(out)))
+        out = self.activation(self.morm2(self.fc1(out)))
         out = self.fc2(out)
+
+        # Add the residual to the output
         return out + skip
 
 
@@ -38,8 +40,8 @@ class LSTM(nn.Module):
     def __init__(self, output_size, patch_size, lstm_layers, hidden_size=1, number_block=1):
         super(LSTM, self).__init__()
 
-        # Define the layers for the LSTM model
-        self.fc_in = nn.Linear(patch_size ** 2, hidden_size)
+        # Define the layers for the LSTM models
+        self.fc_in = nn.Linear(patch_size, hidden_size)
 
         # Define the LSTM layer
         self.lstm = nn.LSTM(input_size=hidden_size, hidden_size=hidden_size,
@@ -51,6 +53,7 @@ class LSTM(nn.Module):
 
         # Define the output layer
         self.fc_out = nn.Linear(hidden_size, output_size)
+        self.softmax = nn.Softmax(dim=1)
 
         # Activation function
         self.activation = nn.ELU()
@@ -61,8 +64,11 @@ class LSTM(nn.Module):
 
         # Reshape the input data
         input_data = input_data.view(bs, seq, -1)
+
+        out = self.fc_in(input_data)
+
         # Apply the input fully connected layer
-        out = self.activation(self.fc_in(input_data))
+        out = self.activation(out)
 
         # The LSTM layer
         out, (hidden_out, mem_out) = self.lstm(out, (hidden_in, mem_in))
@@ -75,5 +81,6 @@ class LSTM(nn.Module):
 
         # Apply the output fully connected layer
         out = self.fc_out(out)
+        out = self.softmax(out)
 
         return out, hidden_out, mem_out

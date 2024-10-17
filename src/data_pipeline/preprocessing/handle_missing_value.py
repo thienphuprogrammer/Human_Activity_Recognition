@@ -13,7 +13,6 @@ def get_variance_of_metrics(metrics: np.array) -> np.array:
             # If there are more than 1 non-NaN values, calculate variance
             if np.count_nonzero(~np.isnan(element[:, j])) > 1:
                 variance = np.nanvar(element[:, j], axis=0)
-                print(variance)
             else:
                 if i not in cls_nan:
                     cls_nan[i] = []

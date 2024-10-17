@@ -1,5 +1,5 @@
 import torch
-from src.model.lstm import LSTM
+from src.models.lstm import LSTM
 from tqdm.notebook import trange, tqdm
 
 

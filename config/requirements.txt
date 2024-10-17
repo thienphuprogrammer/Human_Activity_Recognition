@@ -1,6 +1,8 @@
-mediapipe===latest
-moviepy===latest
-opencv-python===latest
-numpy===latest
-pandas===latest
-torch===latest
+mediapipe===0.10.15
+moviepy===1.0.3
+opencv-python===4.10.0.84
+numpy===1.26.4
+pandas===2.2.3
+torch===2.4.1
+torchvision===0.19.1
+pytorch===2.3.0

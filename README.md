@@ -1,7 +1,44 @@
 # Human_Activity_Recognition
-This project focuses on developing a Human Activity Recognition (HAR) system using machine learning and deep learning techniques. The goal is to classify and recognize human activities (e.g., walking, sitting, running) based on sensor data or multimedia inputs like images or videos. The system is built with modular components, making it flexible for experimentation, data processing, model training, and deployment.
+
+## 1. Giới thiệu về Mô hình HAR
+
+Mục tiêu của mô hình Human Activity Recognition (HAR) là nhận diện và phân loại các hành động của con người dựa trên dữ
+liệu từ video. Quy trình bao gồm việc trích xuất các đặc trưng chuyển động và sử dụng mô hình học sâu để dự đoán hành
+động tương ứng.
+
+## 2. Quy trình xây dựng mô hình
+
+### 2.1. Load dữ liệu video
+
+Video được đưa vào hệ thống để xử lý.
+Sử dụng MediaPipe để phát hiện tư thế (pose detection) trong từng khung hình của video.
+
+### 2.2. Phát hiện và xử lý tư thế (Pose Detection)
+
+MediaPipe trích xuất các điểm đặc trưng (keypoints) từ cơ thể người qua từng khung hình.
+Các điểm này đại diện cho các vị trí như vai, đầu gối, khuỷu tay, cổ tay, v.v.
+
+### 2.3. Tiền xử lý dữ liệu
+
+Sau khi có dữ liệu từ MediaPipe, thực hiện các bước sau:
+Điều chỉnh kích thước dữ liệu:
+Tăng hoặc giảm chiều dữ liệu để đạt kích thước chuẩn size = 35.
+Điều này đảm bảo dữ liệu nhất quán và dễ xử lý cho các bước sau.
+Xử lý dữ liệu thiếu (NaN):
+Điền giá trị NaN vào các khoảng trống để đảm bảo dữ liệu không có lỗi trong quá trình huấn luyện.
+
+### 2.4. Huấn luyện mô hình với Deep LSTM
+
+Sau khi dữ liệu đã được xử lý, nó sẽ được đưa vào mô hình Deep LSTM (Long Short-Term Memory).
+Mô hình LSTM được sử dụng vì khả năng ghi nhớ và phân tích các chuỗi thời gian, rất phù hợp với bài toán nhận diện hành
+động từ video.
+
+### 2.5. Phân loại hành động
+
+Mô hình Deep LSTM sẽ dự đoán và phân loại các hành động cụ thể dựa trên chuỗi các tư thế đầu vào.
 
 ## Project Structure
+
 ```bash
 har_project/
 │

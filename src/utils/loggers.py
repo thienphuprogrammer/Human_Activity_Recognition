@@ -38,3 +38,6 @@ def visualize_accuracy(training_accuracy_logger, validation_accuracy_logger, pat
     plt.legend()
     # Save the plot
     plt.savefig(path)
+
+
+__all__ = ['save_results', 'visualize_accuracy', 'visualize_loss']

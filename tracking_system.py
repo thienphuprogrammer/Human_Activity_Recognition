@@ -1,9 +1,13 @@
+import time
+
+import cv2
+
 from src.core_model import CoreModel
 from src.data_pipeline.preprocessing.pose_tracker import *
 
 
 class TrackingSystem:
-    def __init__(self, num_frames=35, max_stored_clips=3, save_interval=0.5):
+    def __init__(self, model_path, num_frames=35, max_stored_clips=3, save_interval=0.5):
         self.pose_tracker = PoseTracker()
         self.clip_storage = []
         self.num_frames = num_frames
@@ -11,14 +15,18 @@ class TrackingSystem:
         self.save_interval = save_interval
         self.count_frames = 0
         self.last_save_time = time.time()
-        # self.core_model = CoreModel()
+        self.core_model = CoreModel(model_path=model_path)
 
-    def save_clip(self, clip):
+    def update_and_predict_clip(self, clip):
+        results = None
         if len(self.clip_storage) >= self.max_stored_clips:
+            results = self.core_model.predict(self.clip_storage)
             self.count_frames -= len(self.clip_storage[0])
             self.clip_storage.pop(0)
         self.clip_storage.append(clip)
         self.count_frames += len(clip)
+
+        return results
 
     def start_camera(self):
         cap = cv2.VideoCapture("./../data/raw/7752246914108791071.mp4")
@@ -39,7 +47,7 @@ class TrackingSystem:
 
             if time.time() - self.last_save_time >= self.save_interval:
                 # self.core_model.predict(current_clip)
-                self.save_clip(current_clip)
+                self.update_and_predict_clip(current_clip)
                 current_clip = []
                 self.last_save_time = time.time()
 

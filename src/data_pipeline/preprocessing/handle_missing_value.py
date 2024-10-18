@@ -2,27 +2,17 @@ import numpy as np
 
 
 def get_variance_of_metrics(metrics: np.array) -> np.array:
-    cls_nan = dict()
-    variance_metric = np.empty((metrics.shape[0], metrics.shape[2], 3), dtype=np.float32)
-    for i, element in enumerate(metrics):
-        sub_variance_metric = np.empty((element.shape[1], 3), dtype=np.float32)
+    sub_variance_metric = np.empty((metrics.shape[1], 3), dtype=np.float32)
 
-        for j in range(element.shape[1]):
-            variance = np.array([np.nan, np.nan, np.nan], dtype=np.float32)
+    for j in range(metrics.shape[1]):
+        variance = np.array([np.nan, np.nan, np.nan], dtype=np.float32)
 
-            # If there are more than 1 non-NaN values, calculate variance
-            if np.count_nonzero(~np.isnan(element[:, j])) > 1:
-                variance = np.nanvar(element[:, j], axis=0)
-            else:
-                if i not in cls_nan:
-                    cls_nan[i] = []
-                cls_nan[i].append(j)
-            # convert to list
-            sub_variance_metric[j] = variance
-        # print(sub_variance_metric)
-        variance_metric[i] = sub_variance_metric
-
-    return variance_metric, cls_nan
+        # If there are more than 1 non-NaN values, calculate variance
+        if np.count_nonzero(~np.isnan(metrics[:, j])) > 1:
+            variance = np.nanvar(metrics[:, j], axis=0)
+        # convert to list
+        sub_variance_metric[j] = variance
+        return sub_variance_metric
 
 
 # Function to fill NaN values based on the described cases
@@ -55,3 +45,6 @@ def handle_fill_nan_by_variance(element, variance_metric):
                     element[i] = old_value - abs(i - k) * variance_metric
         old_value = element[i]
     return element
+
+
+__all__ = ['get_variance_of_metrics', 'handle_fill_nan_by_variance']

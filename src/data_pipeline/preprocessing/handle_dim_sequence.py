@@ -54,3 +54,6 @@ def pad_and_truncate(ele, max_dim: int = 35) -> np.array:
         for step in range(dev):
             list_elements.append(truncate_length(ele, max_dim, step))
     return list_elements
+
+
+__all__ = ['pad_length', 'truncate_length', 'pad_and_truncate']

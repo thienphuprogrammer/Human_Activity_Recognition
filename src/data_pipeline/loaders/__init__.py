@@ -1,1 +1,1 @@
-from src.data_pipeline.loaders import *
+from . import loaders

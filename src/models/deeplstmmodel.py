@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 
 class ResBlockMLP(nn.Module):
@@ -37,7 +36,8 @@ class ResBlockMLP(nn.Module):
 
 
 class DeepLSTMModel(nn.Module):
-    def __init__(self, input_size, output_size, patch_size, lstm_layers=2, hidden_size=1024, number_block=1, dropout=0.5):
+    def __init__(self, input_size, output_size, patch_size, lstm_layers=2, hidden_size=1024, number_block=1,
+                 dropout=0.5):
         super(DeepLSTMModel, self).__init__()
 
         # Input layer to match patch size to hidden size
@@ -91,3 +91,6 @@ class DeepLSTMModel(nn.Module):
         # Fully connected layer
         out = self.fc_out(out)
         return out
+
+
+__all__ = ['ResBlockMLP', 'DeepLSTMModel']

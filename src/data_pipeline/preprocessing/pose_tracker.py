@@ -44,3 +44,6 @@ class PoseTracker:
         fps = 1 / (self.current_time - self.prev_time)
         self.prev_time = self.current_time
         return fps
+
+
+__all__ = ['PoseTracker']

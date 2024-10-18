@@ -1,6 +1,10 @@
-from src.data_pipeline.preprocessing.video_pose_extractor import *
+import os
+
+import numpy as np
+
 from src.data_pipeline.preprocessing.handle_dim_sequence import *
 from src.data_pipeline.preprocessing.handle_missing_value import *
+from src.data_pipeline.preprocessing.video_pose_extractor import *
 
 label_list = {
     'Jump': 0,
@@ -38,7 +42,7 @@ def load_har_dataset(dataset_path: str, resize_dataset_video_path: str = None,
             return X_test, y_test
 
     # Resize videos and save them
-    # resize_videos_and_save(dataset_path, resize_dataset_video_path)
+    resize_videos_and_save(dataset_path, resize_dataset_video_path)
     # Process videos and save data to csv
     X, y = process_videos(resize_dataset_video_path, dataset_csv_path)
 
@@ -68,7 +72,10 @@ def load_har_dataset(dataset_path: str, resize_dataset_video_path: str = None,
 
                 X_train[i][j][k] = X_train_temp[i][j][k][:3]
 
-    variance_metric, _ = get_variance_of_metrics(X_train)
+    variance_metric = np.empty((X_train.shape[0], X_train.shape[2], 3), dtype=np.float32)
+    for i, element in enumerate(X_train):
+        sub_variance_metric = get_variance_of_metrics(element)
+        variance_metric[i] = sub_variance_metric
 
     for i in range(X_train.shape[0]):
         for j in range(X_train.shape[2]):

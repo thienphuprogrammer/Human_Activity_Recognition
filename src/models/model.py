@@ -7,8 +7,8 @@ from src.models.deeplstmmodel import DeepLSTMModel
 
 
 class Model:
-    def __init__(self, input_size, num_classes, patch_size,
-                 lstm_layer, hidden_size, number_block, device):
+    def __init__(self, input_size=None, num_classes=None, patch_size=None,
+                 lstm_layer=None, hidden_size=None, number_block=None, device='cuda'):
         # Initialize the LSTM models
         self.lstm = DeepLSTMModel(output_size=num_classes, input_size=input_size,
                                   patch_size=patch_size, lstm_layers=lstm_layer,
@@ -16,7 +16,7 @@ class Model:
                                   ).to(device)
         self.device = device
 
-    def predict(self, data):
+    def predict(self, data: torch.Tensor) -> torch.Tensor:
         # Set the models to evaluation mode
         self.lstm.eval()
         with torch.no_grad():
@@ -94,7 +94,7 @@ class Model:
             validation_loss_logger.append(val_loss)
             validation_accuracy_logger.append(val_acc)
 
-            pbar.set_description(f"Epoch {epoch+1}: Train Acc {train_acc:.2f}%, Val Acc {val_acc:.2f}%")
+            pbar.set_description(f"Epoch {epoch + 1}: Train Acc {train_acc:.2f}%, Val Acc {val_acc:.2f}%")
 
         return training_loss_logger, validation_loss_logger, training_accuracy_logger, validation_accuracy_logger
 
@@ -123,3 +123,6 @@ class Model:
     def load_model(self, model_path):
         # Load the models state dictionary
         self.lstm.load_state_dict(torch.load(model_path))
+
+
+__all__ = ['Model']

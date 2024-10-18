@@ -1,6 +1,7 @@
 import time
 
 import cv2
+import numpy as np
 
 from src.core_model import CoreModel
 from src.data_pipeline.preprocessing.pose_tracker import *
@@ -20,7 +21,11 @@ class TrackingSystem:
     def update_and_predict_clip(self, clip):
         results = None
         if len(self.clip_storage) >= self.max_stored_clips:
-            results = self.core_model.predict(self.clip_storage)
+            # flatten the array result
+            flatten_result = np.array(self.clip_storage)
+            flatten_result = flatten_result.flatten()
+
+            results = self.core_model.predict(flatten_result)
             self.count_frames -= len(self.clip_storage[0])
             self.clip_storage.pop(0)
         self.clip_storage.append(clip)

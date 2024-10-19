@@ -31,7 +31,7 @@ def visualize_loss(training_loss_logger, validation_loss_logger, path):
     plt.plot(validation_loss_logger, label="Validation Loss")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
-    plt.legend()
+    plt.legend(["Training Loss", "Validation Loss"], loc="upper left")
     # Save the plot
     plt.savefig(path)
     # clear the plot
@@ -43,7 +43,7 @@ def visualize_accuracy(training_accuracy_logger, validation_accuracy_logger, pat
     plt.plot(validation_accuracy_logger, label="Validation Accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
-    plt.legend()
+    plt.legend(["Training Accuracy", "Validation Accuracy"], loc="upper left")
     # Save the plot
     plt.savefig(path)
     # clear the plot

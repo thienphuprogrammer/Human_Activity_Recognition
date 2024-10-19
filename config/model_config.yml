@@ -3,14 +3,14 @@
 
 # Data paths
 PATHS:
-  dataset_path: "./../../../data/raw/HAR/"
-  resize_dataset_video_path: "./../../../data/processed/HAR/"
-  output_csv_path: "./../../../data/processed/HAR/UCF"
+  dataset_path: "./data/raw/HAR/"
+  resize_dataset_video_path: "./data/raw/HAR/"
+  output_csv_path: "./data/processed/HAR/UCF"
 
 # Model parameters
 HYPERPARAMETERS:
   hidden_size: 1024
-  lstm_layer: 2
+  lstm_layer: 1
   patch_size: 99
   num_classes: 6
   num_epochs: 1000
@@ -18,4 +18,5 @@ HYPERPARAMETERS:
   learning_rate: 0.001
   momentum: 0.9
   number_block: 1
+  max_dim: 50
   device: 'cuda'

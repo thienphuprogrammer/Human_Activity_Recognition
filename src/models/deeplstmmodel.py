@@ -36,37 +36,70 @@ class ResBlockMLP(nn.Module):
 
 
 class DeepLSTMModel(nn.Module):
-    def __init__(self, input_size, output_size, patch_size, lstm_layers=2, hidden_size=1024, number_block=1,
-                 dropout=0.5):
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        patch_size,
+        lstm_layers=2,
+        hidden_size=1024,
+        number_block=1,
+        dropout=0.5,
+    ):
         super(DeepLSTMModel, self).__init__()
 
-        # Input layer to match patch size to hidden size
-        self.activation = nn.ELU()
-
         # Deep LSTM: Bidirectional with many layers
-        self.lstm1 = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
-                             batch_first=True, bidirectional=True)
+        self.lstm1 = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            batch_first=True,
+            bidirectional=True,
+        )
         self.dropout1 = nn.Dropout(dropout)
+        self.norm1 = nn.LayerNorm(hidden_size * 2)
 
-        self.lstm2 = nn.LSTM(input_size=hidden_size * 2,
-                             hidden_size=hidden_size // 2, batch_first=True,
-                             bidirectional=True)
+        self.lstm2 = nn.LSTM(
+            input_size=hidden_size * 2,
+            hidden_size=hidden_size // 2,
+            batch_first=True,
+            bidirectional=True,
+        )
         self.dropout2 = nn.Dropout(dropout)
+        self.norm2 = nn.LayerNorm(hidden_size)
 
-        self.lstm3 = nn.LSTM(input_size=hidden_size,
-                             hidden_size=hidden_size // 8, batch_first=True,
-                             bidirectional=True)
+        self.lstm3 = nn.LSTM(
+            input_size=hidden_size,
+            hidden_size=hidden_size // 4,
+            batch_first=True,
+            bidirectional=True,
+        )
         self.dropout3 = nn.Dropout(dropout)
+        self.norm3 = nn.LayerNorm(hidden_size // 2)
 
-        blocks = [ResBlockMLP(hidden_size, hidden_size // 8) for _ in range(number_block)]
+        self.lstm4 = nn.LSTM(
+            input_size=hidden_size // 2,
+            hidden_size=hidden_size // 8,
+            batch_first=True,
+            bidirectional=True,
+        )
+        self.dropout4 = nn.Dropout(dropout)
+        self.norm4 = nn.LayerNorm(hidden_size // 4)
+
+        blocks = [
+            ResBlockMLP(hidden_size, hidden_size // 8) for _ in range(number_block)
+        ]
         self.blocks = nn.Sequential(*blocks)
         self.fc_out = nn.Linear(hidden_size // 4, output_size)
 
     def initialize_hidden(self, batch_size, hidden_size):
         # Initialize hidden and cell states (2 for bidirectional, * layers)
         num_directions = 2
-        hidden = torch.zeros(self.lstm.num_layers * num_directions, batch_size, hidden_size)
-        cell = torch.zeros(self.lstm.num_layers * num_directions, batch_size, hidden_size)
+        hidden = torch.zeros(
+            self.lstm.num_layers * num_directions, batch_size, hidden_size
+        )
+        cell = torch.zeros(
+            self.lstm.num_layers * num_directions, batch_size, hidden_size
+        )
         return hidden, cell
 
     def forward(self, input_data):
@@ -76,14 +109,22 @@ class DeepLSTMModel(nn.Module):
         # LSTM layer 1
         out, _ = self.lstm1(input_data)
         out = self.dropout1(out)
+        out = self.norm1(out)
 
         # LSTM layer 2
         out, _ = self.lstm2(out)
         out = self.dropout2(out)
+        out = self.norm2(out)
 
         # LSTM layer 3
         out, _ = self.lstm3(out)
         out = self.dropout3(out)
+        out = self.norm3(out)
+
+        # LSTM layer 4
+        out, _ = self.lstm4(out)
+        out = self.dropout4(out)
+        out = self.norm4(out)
 
         # # Residual blocks
         # out = self.blocks(out)
@@ -93,4 +134,4 @@ class DeepLSTMModel(nn.Module):
         return out
 
 
-__all__ = ['ResBlockMLP', 'DeepLSTMModel']
+__all__ = ["ResBlockMLP", "DeepLSTMModel"]

@@ -5,8 +5,14 @@ import matplotlib.pyplot as plt
 import torch
 
 
-def save_results(model, model_path, training_loss_logger, validation_loss_logger, training_accuracy_logger,
-                 validation_accuracy_logger):
+def save_results(
+        model,
+        model_path,
+        training_loss_logger,
+        validation_loss_logger,
+        training_accuracy_logger,
+        validation_accuracy_logger,
+):
     # Save the model
     torch.save(model.state_dict(), model_path)
     # Save the training logs
@@ -28,6 +34,8 @@ def visualize_loss(training_loss_logger, validation_loss_logger, path):
     plt.legend()
     # Save the plot
     plt.savefig(path)
+    # clear the plot
+    plt.clf()
 
 
 def visualize_accuracy(training_accuracy_logger, validation_accuracy_logger, path):
@@ -38,6 +46,8 @@ def visualize_accuracy(training_accuracy_logger, validation_accuracy_logger, pat
     plt.legend()
     # Save the plot
     plt.savefig(path)
+    # clear the plot
+    plt.clf()
 
 
-__all__ = ['save_results', 'visualize_accuracy', 'visualize_loss']
+__all__ = ["save_results", "visualize_accuracy", "visualize_loss"]

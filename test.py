@@ -1,5 +1,6 @@
-from src.models.model import Model
 from torchinfo import summary
+
+from src.models.model_pytorch import Model
 
 hidden_size = [1024, 512, 256, 128]
 lstm_layer = 1
@@ -11,7 +12,7 @@ learning_rate = 0.001
 momentum = 0.9
 number_block = 1
 max_dim = 50
-device = 'cpu'
+device = "cpu"
 
 model = Model(
     batch_size=batch_size,

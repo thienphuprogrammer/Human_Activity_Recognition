@@ -1,2 +1,2 @@
-from . import deeplstmbimodel
-from . import model
+# from . import deeplstmbimodel_pytorch
+from . import model_pytorch

@@ -5,7 +5,7 @@ label_list = {"Jump": 0, "Kick": 1, "Punch": 2, "Left": 3, "Right": 4, "Stand": 
 
 
 class TrackingSystem:
-    def __init__(self, model_path, max_stored_clips=25, save_interval=0.1):
+    def __init__(self, model_path, max_stored_clips=6, save_interval=0.05):
         self.pose_tracker = PoseTracker()
         self.clip_storage = []
         self.max_stored_clips = max_stored_clips
@@ -13,9 +13,14 @@ class TrackingSystem:
         self.count_frames = 0
         self.last_save_time = time.time()
         self.core_model = CoreModel(model_path=model_path)
+        self.results = None
 
     def update_and_predict_clip(self, clip):
-        results = None
+        results = self.results
+        clip = np.array(clip)
+        self.clip_storage.append(clip)
+        self.count_frames += len(clip)
+
         if len(self.clip_storage) >= self.max_stored_clips:
             # flatten the array result
             flatten_result = []
@@ -23,26 +28,32 @@ class TrackingSystem:
                 for frame in clip:
                     flatten_result.append(frame)
             flatten_result = np.array(flatten_result)
-            results = self.core_model.predict(flatten_result)
+            results = self.core_model.predict(flatten_result, max_dim=35)
             print(f"Prediction: {results}")
-            self.count_frames -= len(self.clip_storage[0])
-            self.clip_storage.pop(0)
-        clip = np.array(clip)
-        self.clip_storage.append(clip)
-        self.count_frames += len(clip)
-
+            Max = 0
+            for i in range(len(results[0])):
+                if results[0][i] > results[0][Max]:
+                    Max = i
+            # print the label of the result where has a value of label_list = Max
+            for key, value in label_list.items():
+                if value == Max:
+                    results = key
+            for clip in self.clip_storage[: int(self.max_stored_clips / 2)]:
+                self.count_frames -= len(clip)
+            # pop 50% of the stored clips
+            self.clip_storage = self.clip_storage[int(self.max_stored_clips / 2):]
         return results
 
     def start_camera(self):
-        # cap = cv2.VideoCapture("./data/raw/HAR/Train/Right/Right_1.mp4")
-        cap = cv2.VideoCapture("./data/7752246914108791071.mp4")
+        # cap = cv2.VideoCapture("./data/raw/HAR/Train/Punch/Punch_10.mp4")
+        # cap = cv2.VideoCapture("./data/7752246914108791071.mp4")
+        cap = cv2.VideoCapture(0)
         if not cap.isOpened():
             raise IOError("Cannot open webcam")
 
         print("Press 'q' to quit")
 
         current_clip = []
-        results = None
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -54,16 +65,16 @@ class TrackingSystem:
 
             if time.time() - self.last_save_time >= self.save_interval:
                 # self.core_model.predict(current_clip)
-                results = self.update_and_predict_clip(current_clip)
+                self.results = self.update_and_predict_clip(current_clip)
                 current_clip = []
                 self.last_save_time = time.time()
 
             # Display the FPS
             fps = self.pose_tracker.get_fps()
-            if results is not None:
+            if self.results is not None:
                 cv2.putText(
                     frame,
-                    f"Prediction: {list(label_list.keys())[results[0]]}",
+                    f"Prediction: {self.results}",
                     (10, 90),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,

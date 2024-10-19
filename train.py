@@ -3,7 +3,7 @@ import yaml
 from sklearn.model_selection import train_test_split
 
 from src.data_pipeline.loaders.loaders import load_har_dataset
-from src.models.model import Model
+from src.models.model_pytorch import Model
 from src.utils.loggers import visualize_loss, visualize_accuracy
 
 # Load the configuration file
@@ -41,7 +41,9 @@ print(f"Training data shape: {x_train.shape}, Training labels shape: {y_train.sh
 print(f"Training data type: {x_train.dtype}, Training labels type: {y_train.dtype}")
 print("-" * 100)
 
-X_train, X_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+X_train, X_val, y_train, y_val = train_test_split(
+    x_train, y_train, test_size=0.2, random_state=42
+)
 
 # x_val, y_val = torch.from_numpy(x_val).float(), torch.from_numpy(y_val).long()
 # print(f"Validation data shape: {x_val.shape}, Validation labels shape: {y_val.shape}")

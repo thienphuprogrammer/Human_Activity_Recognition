@@ -3,30 +3,27 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm.auto import trange, tqdm
 
-from src.models.deeplstmmodel import DeepLSTMModel
+from src.models.deeplstmbimodel import DeepLSTMBiModel
 
 
 class Model:
     def __init__(
             self,
-            input_size=99,
-            num_classes=6,
-            patch_size=99,
-            lstm_layer=2,
-            hidden_size=1024,
-            number_block=1,
+            input_size,
+            num_classes,
+            patch_size,
+            lstm_layer,
+            hidden_size,
+            number_block,
+            batch_size,
             device="cuda",
     ):
 
-        self.lstm = DeepLSTMModel(
-            output_size=num_classes,
-            input_size=input_size,
-            patch_size=patch_size,
-            lstm_layers=lstm_layer,
-            hidden_size=hidden_size,
-            number_block=number_block,
-        ).to(device)
+        self.lstm = DeepLSTMBiModel(input_size=input_size, output_size=num_classes, patch_size=patch_size,
+                                    lstm_layers=lstm_layer, hidden_sizes=hidden_size,
+                                    number_block=number_block).to(device)
         self.device = device
+        self.batch_size = batch_size
 
     def predict(self, data: torch.Tensor) -> torch.Tensor:
         # Set the models to evaluation mode
@@ -56,8 +53,10 @@ class Model:
 
     def fit(
             self,
-            train_loader,
-            val_loader,
+            X_train,
+            y_train,
+            X_val,
+            y_val,
             learning_rate=0.001,
             momentum=0.9,
             epochs=100,
@@ -68,6 +67,19 @@ class Model:
             self.lstm.parameters(), lr=learning_rate, betas=(momentum, 0.999)
         )
         loss_function = nn.CrossEntropyLoss()
+
+        train_data = torch.utils.data.DataLoader(
+            torch.tensor(X_train, dtype=torch.float32),
+            torch.tensor(y_train, dtype=torch.long),
+        )
+
+        val_data = torch.utils.data.DataLoader(
+            torch.tensor(X_val, dtype=torch.float32),
+            torch.tensor(y_val, dtype=torch.long),
+        )
+
+        train_loader = torch.utils.data.DataLoader(train_data, batch_size=self.batch_size, shuffle=True)
+        val_loader = torch.utils.data.DataLoader(val_data, batch_size=self.batch_size, shuffle=False)
 
         # Initialize training and validation loss and accuracy
         training_loss_logger, validation_loss_logger = [], []
@@ -89,10 +101,8 @@ class Model:
 
                 # Forward pass through the models
                 data_pred = self.lstm(data)
-                last_output = data_pred[:, -1, :]
-
                 # Calculate the loss
-                loss = loss_function(last_output, target)
+                loss = loss_function(data_pred, target)
 
                 # Backpropagation
                 optimizer.zero_grad()
@@ -101,7 +111,7 @@ class Model:
 
                 # Log the training loss and calculate the number of correct predictions
                 training_loss_logger.append(loss.item())
-                correct += (last_output.argmax(dim=1) == target).sum().item()
+                correct += (data_pred.argmax(dim=1) == target).sum().item()
                 total += target.size(0)
 
             # Calculate the training accuracy
@@ -133,9 +143,8 @@ class Model:
             for data, target in tqdm(data_loader, desc="Validation", leave=False):
                 data, target = data.to(device), target.to(device)
                 data_pred = self.lstm(data)
-                last_output = data_pred[:, -1, :]
-                val_loss += loss_function(last_output, target).item()
-                correct += (last_output.argmax(dim=1) == target).sum().item()
+                val_loss += loss_function(data_pred, target).item()
+                correct += (data_pred.argmax(dim=1) == target).sum().item()
                 total += target.size(0)
 
         val_acc = correct / total

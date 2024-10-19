@@ -1,5 +1,6 @@
 import torch
 import yaml
+from sklearn.model_selection import train_test_split
 
 from src.data_pipeline.loaders.loaders import load_har_dataset
 from src.models.model import Model
@@ -26,7 +27,6 @@ with open("config/model_config.yml", "r") as ymlfile:
     max_dim = cfg["HYPERPARAMETERS"]["max_dim"]
 
 # Set the paths
-
 x_train, y_train = load_har_dataset(
     dataset_path,
     max_dim=max_dim,
@@ -35,39 +35,21 @@ x_train, y_train = load_har_dataset(
     train_test="train",
 )
 
-x_val, y_val = load_har_dataset(
-    dataset_path,
-    max_dim=max_dim,
-    resize_dataset_video_path=resize_dataset_video_path,
-    dataset_csv_path=output_csv_path,
-    train_test="test",
-)
-
 # Convert the numpy arrays to PyTorch tensors
 x_train, y_train = torch.from_numpy(x_train).float(), torch.from_numpy(y_train).long()
 print(f"Training data shape: {x_train.shape}, Training labels shape: {y_train.shape}")
 print(f"Training data type: {x_train.dtype}, Training labels type: {y_train.dtype}")
 print("-" * 100)
 
-x_val, y_val = torch.from_numpy(x_val).float(), torch.from_numpy(y_val).long()
-print(f"Validation data shape: {x_val.shape}, Validation labels shape: {y_val.shape}")
-print(f"Validation data type: {x_val.dtype}, Validation labels type: {y_val.dtype}")
-print("-" * 100)
+X_train, X_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
 
-train_loader = torch.utils.data.DataLoader(
-    torch.utils.data.TensorDataset(x_train, y_train),
-    batch_size=batch_size,
-    shuffle=True,
-)
+# x_val, y_val = torch.from_numpy(x_val).float(), torch.from_numpy(y_val).long()
+# print(f"Validation data shape: {x_val.shape}, Validation labels shape: {y_val.shape}")
+# print(f"Validation data type: {x_val.dtype}, Validation labels type: {y_val.dtype}")
+# print("-" * 100)
 
-val_loader = torch.utils.data.DataLoader(
-    torch.utils.data.TensorDataset(x_val, y_val), batch_size=batch_size, shuffle=False
-)
-
-# Initialize the model
-bs, seq, col, row = x_train.size()
 model = Model(
-    input_size=col * row,
+    input_size=X_train.shape[2],
     num_classes=num_classes,
     patch_size=patch_size,
     lstm_layer=lstm_layer,
@@ -83,8 +65,10 @@ model = Model(
     training_accuracy_logger,
     validation_accuracy_logger,
 ) = model.fit(
-    train_loader,
-    val_loader,
+    X_train=X_train,
+    y_train=y_train,
+    X_val=X_val,
+    y_val=y_val,
     learning_rate=learning_rate,
     epochs=num_epochs,
     device=device,

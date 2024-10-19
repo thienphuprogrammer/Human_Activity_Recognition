@@ -1,2 +1,2 @@
-from .deeplstmmodel import *
-from .model import *
+from . import deeplstmbimodel
+from . import model
